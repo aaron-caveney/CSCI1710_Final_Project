@@ -145,6 +145,29 @@ pred elkDegradeVegetation[h: Habitat] {
     }
 }
 
+pred elkDisperse[h1: Habitat, h2: Habitat] {
+    // LOGIC
+    h2 in h1.adjacent                                         // habitats must be connected
+    h1.elkPop != Empty and h1.elkPop != Low                   // source must have meaningful population
+    h1.vegLevel != High and h1.vegLevel != Overpopulated      // food is scarce (medium, low, or empty)
+    h2.elkPop != Overpopulated                                // destination not already overwhelmed
+    // source loses population
+    prevLevel[h1.elkPop, h1.elkPop']
+    // destination gains population
+    nextLevel[h2.elkPop, h2.elkPop']
+    // vegetation in destination decreases as new elk arrive
+    prevLevel[h2.vegLevel, h2.vegLevel']
+    // FRAME
+    h1.wolfPop'  = h1.wolfPop
+    h1.vegLevel' = h1.vegLevel                                // source veg unchanged (elk left)
+    h2.wolfPop'  = h2.wolfPop
+    all other: Habitat | (other != h1 and other != h2) implies {
+        other.elkPop'   = other.elkPop
+        other.wolfPop'  = other.wolfPop
+        other.vegLevel' = other.vegLevel
+    }
+}
+
 pred wolfStarve[h: Habitat] {
     h.elkPop  = Empty
     h.wolfPop != Empty
@@ -198,22 +221,28 @@ pred doNothing {
 
 
 pred step {
-    some h: Habitat, h2: Habitat | {
+    some h: Habitat, h2: Habitat | { //should switch to all h eventually for realism. just some for now bc easier to read
         elkGrow[h]              or
         wolfPredation[h]        or
         vegetationRecover[h]    or
         elkDegradeVegetation[h] or
         wolfStarve[h]           or
         reintroduceWolves[h]    or
-        wolfMigrate[h, h2]
+        wolfMigrate[h, h2]      or 
+        elkDisperse[h, h2]
     } or doNothing
 }
 
 // initial state (for now....)
 pred init {
-    all h: Habitat | h.wolfPop = Empty
-    all h: Habitat  | h.elkPop  = Overpopulated
-    all h: Habitat | h.vegLevel = Low
+    some h: Habitat | {
+        h.wolfPop  = Empty
+        h.elkPop   = Overpopulated
+        h.vegLevel = Medium
+    }
+    // ensure habitats are connected
+    all h: Habitat | some h.adjacent
+    all h: Habitat | h not in h.adjacent  // no self-loops
 }
 
 pred validTrace {
@@ -225,7 +254,7 @@ pred validTrace {
 
 // can coexistence ever be reached?
 option max_tracelength 20
-
+//"stability"
 run  {
     validTrace
     eventually {
@@ -233,7 +262,16 @@ run  {
         all h: Habitat  | h.elkPop  = Medium
         all h: Habitat | h.vegLevel = Medium
     }
-} for 2 Habitat
+} for exactly 2 Habitat
+//wolves and veg are overpopulated
+run  {
+    validTrace
+    eventually {
+        all h: Habitat | h.wolfPop = Overpopulated
+        all h: Habitat  | h.elkPop  = Empty
+        all h: Habitat | h.vegLevel = Overpopulated
+    }
+} for exactly 2 Habitat
 
 //more runs coming soon...
 
