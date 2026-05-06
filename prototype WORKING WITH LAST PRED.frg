@@ -1,13 +1,18 @@
 #lang forge/temporal
 
 abstract sig PopLevel {}
+abstract sig Event {}
 one sig Empty, Low, Medium, High, Overpopulated extends PopLevel {}
+one sig ElkGrow, ElkReproduce, WolfPredation, VegetationRecover, 
+        ElkDegradeVegetation, WolfStarve, ReintroduceWolves,
+        WolfMigrate, ElkDisperse, DoNothing extends Event {}
 
 sig Habitat {
     adjacent: set Habitat,
-    var elkPop:  one PopLevel,
-    var wolfPop: one PopLevel,
-    var vegLevel: one PopLevel
+    var elkPop:   one PopLevel,
+    var wolfPop:  one PopLevel,
+    var vegLevel: one PopLevel,
+    var lastEvent: one Event  
 }
 
 // ── level helpers ──────────────────────────────────────────────
@@ -35,6 +40,7 @@ pred frameOthers[h: Habitat] {
         other.elkPop'   = other.elkPop
         other.wolfPop'  = other.wolfPop
         other.vegLevel' = other.vegLevel
+        other.lastEvent' = other.lastEvent
     }
 }
 //transitions
@@ -49,7 +55,9 @@ pred elkGrow[h: Habitat] {
         other.elkPop'  = other.elkPop
         other.wolfPop' = other.wolfPop
         other.vegLevel' = other.vegLevel
+        other.lastEvent' = other.lastEvent
     }
+    h.lastEvent' = ElkGrow
 }
 //Harder to occur, but helps lead to a more stable scenario 
 pred elkReproduce[h: Habitat] {
@@ -59,6 +67,7 @@ pred elkReproduce[h: Habitat] {
     prevLevel[h.vegLevel, h.vegLevel']
     h.wolfPop' = h.wolfPop
     frameOthers[h]
+    h.lastEvent' = ElkReproduce
 }
 
 pred wolfPredation[h: Habitat] {
@@ -71,7 +80,9 @@ pred wolfPredation[h: Habitat] {
         other.elkPop'  = other.elkPop
         other.wolfPop' = other.wolfPop
         other.vegLevel' = other.vegLevel
+        other.lastEvent' = other.lastEvent
     }
+    h.lastEvent' = WolfPredation
 }
 
 pred vegetationRecover[h: Habitat] {
@@ -84,7 +95,9 @@ pred vegetationRecover[h: Habitat] {
         other.elkPop'  = other.elkPop
         other.wolfPop' = other.wolfPop
         other.vegLevel' = other.vegLevel
+        other.lastEvent' = other.lastEvent
     }
+    h.lastEvent' = VegetationRecover
 }
 
 pred elkDegradeVegetation[h: Habitat] {
@@ -97,7 +110,9 @@ pred elkDegradeVegetation[h: Habitat] {
         other.elkPop'  = other.elkPop
         other.wolfPop' = other.wolfPop
         other.vegLevel' = other.vegLevel
+        other.lastEvent' = other.lastEvent
     }
+    h.lastEvent' = ElkDegradeVegetation
 }
 
 pred elkDisperse[h1: Habitat, h2: Habitat] {
@@ -120,7 +135,10 @@ pred elkDisperse[h1: Habitat, h2: Habitat] {
         other.elkPop'   = other.elkPop
         other.wolfPop'  = other.wolfPop
         other.vegLevel' = other.vegLevel
+        other.lastEvent' = other.lastEvent
     }
+    h1.lastEvent' = ElkDisperse
+    h2.lastEvent' = ElkDisperse
 }
 
 pred wolfStarve[h: Habitat] {
@@ -133,7 +151,9 @@ pred wolfStarve[h: Habitat] {
         other.elkPop'  = other.elkPop
         other.wolfPop' = other.wolfPop
         other.vegLevel' = other.vegLevel
+        other.lastEvent' = other.lastEvent
     }
+    h.lastEvent' = WolfStarve
 }
 
 // wolf moves from one habitat to adjacent, taking population with it
@@ -152,7 +172,11 @@ pred wolfMigrate[h1: Habitat, h2: Habitat] {
         other.elkPop'  = other.elkPop
         other.wolfPop' = other.wolfPop
         other.vegLevel' = other.vegLevel
+        other.lastEvent' = other.lastEvent
     }
+    h1.lastEvent' = WolfMigrate
+    h2.lastEvent' = WolfMigrate
+    
 }
 
 pred reintroduceWolves[h: Habitat] {
@@ -163,6 +187,7 @@ pred reintroduceWolves[h: Habitat] {
     h.elkPop'  = h.elkPop
     h.vegLevel' = h.vegLevel
     frameOthers[h]
+    h.lastEvent' = ReintroduceWolves
 }
 
 pred doNothing {
@@ -170,6 +195,7 @@ pred doNothing {
         h.elkPop'   = h.elkPop
         h.wolfPop'  = h.wolfPop
         h.vegLevel' = h.vegLevel
+        h.lastEvent' = DoNothing
     }
 }
 
