@@ -208,6 +208,16 @@ pred step {
     } or doNothing
 }
 
+// pred step {
+//     (some w: Wolf, e: Elk | wolfPredation[w, e]) or
+//     (some e: Elk | elkGrow[e]) or
+//     (some w: Wolf, e: Elk | wolfStarve[w, e]) or
+//     (some w: Wolf | wolfMigrate[w]) or
+//     (some w: Wolf, h: Habitat | reintroduceWolves[w, h]) or
+//     (some v: Vegetation | vegetationRecover[v]) or
+//     doNothing
+// }
+
 
 // initial state (for now....)
 pred init {
@@ -236,4 +246,13 @@ run  {
 } for 2 Habitat, 1 Wolf, 1 Elk, 1 Vegetation
 
 //more runs coming soon...
+
+// run {
+//     validTrace
+//     eventually {
+//         all w: Wolf | w.wolfPop != Empty
+//         all e: Elk  | e.elkPop  = Medium
+//         all v: Vegetation | v.vegLevel = Medium
+//     }
+// } for 2 Habitat, 1 Wolf, 1 Elk, 1 Vegetation, 10 steps
 
