@@ -7,8 +7,6 @@
 // 4: Make sure <svg> is selected and then Copy + paste the visulizer script into the script section
 // 5: Press run and you should see the visualization of the trace
 
-
-
 const stateContainer = d3.select(svg);
 if (stateContainer.datum() === undefined) {
     stateContainer.datum({ current_state: 0 });
@@ -39,7 +37,14 @@ function fam(expr) {
 }
 
 function atomStr(atom) {
-    return atom.toString().replace(/^\[/, "");
+    return atom.toString().replace(/^\[|\]$/g, ""); // Strips brackets
+}
+
+// Safely grab the population level variable from a Habitat atom
+function getPop(habitatName, field, stateIndex) {
+    let hAtom = instances[stateIndex].atom(habitatName);
+    if (!hAtom || !hAtom[field]) return "Empty0"; // Default fallback
+    return atomStr(fam(hAtom[field]));
 }
 
 // Population-level color mapping
@@ -58,7 +63,7 @@ function popColor(levelStr) {
 // ── Main Render Function ──────────────────────────────────────────
 function render() {
     // CRITICAL FIX: Completely wipe the SVG before drawing the new state
-    // This prevents the "0" and "1" text from overlapping.
+    // This prevents the text from overlapping on screen updates.
     d3.select(svg).selectAll("*").remove();
     
     // Create a fresh stage for this specific state
@@ -101,18 +106,16 @@ function render() {
     }));
 
     // ──────────────────────────────────────────────────────────────
-    // 2. Fetch Atoms for Current State
+    // 2. Fetch Habitats for Current State
     // ──────────────────────────────────────────────────────────────
-    const habitats = Habitat.atoms().map(t => fam(t));
-    const wolves = Wolf.atoms().map(t => fam(t));
-    const elks = Elk.atoms().map(t => fam(t));
-    const vegs = Vegetation.atoms().map(t => fam(t));
+    const habitats = Habitat.atoms().map(t => atomStr(fam(t)));
 
     // Layout constants
     const HABITAT_X = 30;
     const HABITAT_W = 250;
     const HABITAT_H = 140;
-    const ICON_W = 36;
+    
+    const ICON_W = 140; // Wide enough for words like "Overpopulated"
     const ICON_H = 26;
     const SUMMARY_X = 340;
 
@@ -124,9 +127,13 @@ function render() {
         color: 'black', fontSize: 16, fontWeight: "Bold"
     }));
 
-    habitats.forEach((habitat, i) => {
-        let hName = atomStr(habitat);
+    habitats.forEach((hName, i) => {
         let hy = 50 + i * (HABITAT_H + 20);
+
+        // Fetch the populations for this specific habitat directly
+        let wPop = getPop(hName, "wolfPop", cs);
+        let ePop = getPop(hName, "elkPop", cs);
+        let vPop = getPop(hName, "vegLevel", cs);
 
         // Main Habitat Box
         stage.add(new Rectangle({
@@ -136,44 +143,29 @@ function render() {
             label: hName
         }));
 
-        // Vegetation Strip (Bottom of Habitat)
-        let hVegs = vegs.filter(v => atomStr(fam(instances[cs].atom(atomStr(v)).vegLocation)) === hName);
-        hVegs.forEach((v, j) => {
-            let vName = atomStr(v);
-            let vPop = instances[cs].atom(vName).vegLevel.toString();
-            stage.add(new Rectangle({
-                coords: { x: HABITAT_X + 10, y: hy + HABITAT_H - 30 },
-                width: HABITAT_W - 20, height: 20,
-                color: popColor(vPop), borderColor: "black", borderWidth: 1,
-                label: `🌿 Veg: ${vPop.replace("0", "")}`
-            }));
-        });
-
         // Wolves inside Habitat
-        let hWolves = wolves.filter(w => atomStr(fam(instances[cs].atom(atomStr(w)).wolfLocation)) === hName);
-        hWolves.forEach((w, j) => {
-            let wName = atomStr(w);
-            let wPop = instances[cs].atom(wName).wolfPop.toString();
-            stage.add(new Rectangle({
-                coords: { x: HABITAT_X + 15 + (j * (ICON_W + 10)), y: hy + 20 },
-                width: ICON_W, height: ICON_H,
-                color: popColor(wPop), borderColor: "black", borderWidth: 2,
-                label: `🐺${wName.slice(-1)}`
-            }));
-        });
+        stage.add(new Rectangle({
+            coords: { x: HABITAT_X + 15, y: hy + 20 },
+            width: ICON_W, height: ICON_H,
+            color: popColor(wPop), borderColor: "black", borderWidth: 2,
+            label: `🐺 ${wPop.replace("0", "")}`
+        }));
 
         // Elk inside Habitat
-        let hElks = elks.filter(e => atomStr(fam(instances[cs].atom(atomStr(e)).elkLocation)) === hName);
-        hElks.forEach((e, j) => {
-            let eName = atomStr(e);
-            let ePop = instances[cs].atom(eName).elkPop.toString();
-            stage.add(new Rectangle({
-                coords: { x: HABITAT_X + 15 + (j * (ICON_W + 10)), y: hy + 60 },
-                width: ICON_W, height: ICON_H,
-                color: popColor(ePop), borderColor: "black", borderWidth: 2,
-                label: `🦌${eName.slice(-1)}`
-            }));
-        });
+        stage.add(new Rectangle({
+            coords: { x: HABITAT_X + 15, y: hy + 60 },
+            width: ICON_W, height: ICON_H,
+            color: popColor(ePop), borderColor: "black", borderWidth: 2,
+            label: `🦌 ${ePop.replace("0", "")}`
+        }));
+
+        // Vegetation Strip (Bottom of Habitat)
+        stage.add(new Rectangle({
+            coords: { x: HABITAT_X + 10, y: hy + HABITAT_H - 30 },
+            width: HABITAT_W - 20, height: 20,
+            color: popColor(vPop), borderColor: "black", borderWidth: 1,
+            label: `🌿 Veg: ${vPop.replace("0", "")}`
+        }));
     });
 
     // ──────────────────────────────────────────────────────────────
@@ -186,32 +178,41 @@ function render() {
         color: 'black', width: 2, style: "dotted"
     }));
 
-    // All Wolves Summary
-    stage.add(new TextBox({ text: "All Wolves", coords: { x: SUMMARY_X + 40, y: 40 }, fontSize: 14, fontWeight: "Bold" }));
-    wolves.forEach((w, i) => {
-        let name = atomStr(w);
-        let pop = instances[cs].atom(name).wolfPop.toString();
-        stage.add(new Rectangle({ 
-            coords: { x: SUMMARY_X + i * 45, y: 60 }, width: ICON_W, height: ICON_H, 
-            color: popColor(pop), borderColor: "black", borderWidth: 2, label: `🐺${name.slice(-1)}` 
-        }));
-    });
+    // Summary Title
+    stage.add(new TextBox({ 
+        text: "Habitat Summary", coords: { x: SUMMARY_X + 60, y: 30 }, 
+        fontSize: 16, fontWeight: "Bold", color: "black" 
+    }));
 
-    // All Elk Summary
-    stage.add(new TextBox({ text: "All Elk", coords: { x: SUMMARY_X + 40, y: 110 }, fontSize: 14, fontWeight: "Bold" }));
-    elks.forEach((e, i) => {
-        let name = atomStr(e);
-        let pop = instances[cs].atom(name).elkPop.toString();
+    // List Populations by Habitat in Summary
+    habitats.forEach((hName, i) => {
+        let wPop = getPop(hName, "wolfPop", cs);
+        let ePop = getPop(hName, "elkPop", cs);
+        
+        let sy = 60 + i * 80;
+
+        stage.add(new TextBox({ 
+            text: hName, coords: { x: SUMMARY_X + 20, y: sy }, 
+            fontSize: 14, fontWeight: "Bold" 
+        }));
+
         stage.add(new Rectangle({ 
-            coords: { x: SUMMARY_X + i * 45, y: 130 }, width: ICON_W, height: ICON_H, 
-            color: popColor(pop), borderColor: "black", borderWidth: 2, label: `🦌${name.slice(-1)}` 
+            coords: { x: SUMMARY_X + 10, y: sy + 15 }, width: ICON_W - 30, height: ICON_H, 
+            color: popColor(wPop), borderColor: "black", borderWidth: 2, 
+            label: `🐺 ${wPop.replace("0", "")}` 
+        }));
+
+        stage.add(new Rectangle({ 
+            coords: { x: SUMMARY_X + 130, y: sy + 15 }, width: ICON_W - 30, height: ICON_H, 
+            color: popColor(ePop), borderColor: "black", borderWidth: 2, 
+            label: `🦌 ${ePop.replace("0", "")}` 
         }));
     });
 
     // Legend
     stage.add(new TextBox({
         text: 'Population Level:',
-        coords: { x: SUMMARY_X + 40, y: 220 },
+        coords: { x: SUMMARY_X + 40, y: 240 },
         color: 'black', fontSize: 15, fontWeight: "Bold"
     }));
 
@@ -225,13 +226,13 @@ function render() {
 
     legendEntries.forEach((e, i) => {
         stage.add(new Rectangle({
-            coords: { x: SUMMARY_X + 10, y: 245 + i * 30 },
+            coords: { x: SUMMARY_X + 10, y: 265 + i * 30 },
             width: 18, height: 18,
             color: e.color, borderColor: "black", borderWidth: 1
         }));
         stage.add(new TextBox({
             text: e.label,
-            coords: { x: SUMMARY_X + 40, y: 245 + i * 30 + 10 },
+            coords: { x: SUMMARY_X + 40, y: 265 + i * 30 + 10 },
             fontSize: 13, color: "black"
         }));
     });
