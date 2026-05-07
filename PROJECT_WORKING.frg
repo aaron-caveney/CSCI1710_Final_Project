@@ -51,12 +51,7 @@ pred elkGrow[h: Habitat] {
     nextLevel[h.elkPop, h.elkPop']
     prevLevel[h.vegLevel, h.vegLevel']
     h.wolfPop' = h.wolfPop
-    all other: Habitat | other != h implies {
-        other.elkPop'  = other.elkPop
-        other.wolfPop' = other.wolfPop
-        other.vegLevel' = other.vegLevel
-        other.lastEvent' = other.lastEvent
-    }
+    frameOthers[h]
     h.lastEvent' = ElkGrow
 }
 //Harder to occur, but helps lead to a more stable scenario 
@@ -76,27 +71,18 @@ pred wolfPredation[h: Habitat] {
     prevLevel[h.elkPop,  h.elkPop']
     nextLevel[h.wolfPop, h.wolfPop']
     h.vegLevel' = h.vegLevel
-    all other: Habitat | other != h implies {
-        other.elkPop'  = other.elkPop
-        other.wolfPop' = other.wolfPop
-        other.vegLevel' = other.vegLevel
-        other.lastEvent' = other.lastEvent
-    }
+    frameOthers[h]
     h.lastEvent' = WolfPredation
 }
 
 pred vegetationRecover[h: Habitat] {
     h.elkPop != Overpopulated
+    h.elkPop != High
     h.vegLevel != Overpopulated
     nextLevel[h.vegLevel, h.vegLevel']
     h.elkPop'  = h.elkPop
     h.wolfPop' = h.wolfPop
-    all other: Habitat | other != h implies {
-        other.elkPop'  = other.elkPop
-        other.wolfPop' = other.wolfPop
-        other.vegLevel' = other.vegLevel
-        other.lastEvent' = other.lastEvent
-    }
+    frameOthers[h]
     h.lastEvent' = VegetationRecover
 }
 
@@ -106,12 +92,7 @@ pred elkDegradeVegetation[h: Habitat] {
     prevLevel[h.vegLevel, h.vegLevel']
     h.elkPop'  = h.elkPop
     h.wolfPop' = h.wolfPop
-    all other: Habitat | other != h implies {
-        other.elkPop'  = other.elkPop
-        other.wolfPop' = other.wolfPop
-        other.vegLevel' = other.vegLevel
-        other.lastEvent' = other.lastEvent
-    }
+    frameOthers[h]
     h.lastEvent' = ElkDegradeVegetation
 }
 
@@ -147,12 +128,7 @@ pred wolfStarve[h: Habitat] {
     prevLevel[h.wolfPop, h.wolfPop']
     h.elkPop'  = h.elkPop
     h.vegLevel' = h.vegLevel
-    all other: Habitat | other != h implies {
-        other.elkPop'  = other.elkPop
-        other.wolfPop' = other.wolfPop
-        other.vegLevel' = other.vegLevel
-        other.lastEvent' = other.lastEvent
-    }
+    frameOthers[h]
     h.lastEvent' = WolfStarve
 }
 
@@ -214,7 +190,7 @@ pred step {
     } or doNothing
 }
 
-// initial state (for now....)
+// initial state (can be adjusted)
 pred init {
     all h: Habitat | {
         h.wolfPop  = Empty
@@ -244,7 +220,7 @@ run  {
         all h: Habitat | h.vegLevel = Medium
     }
 } for exactly 2 Habitat
-//wolves and veg are overpopulated
+//wolves and veg are overpopulated 
 run  {
     validTrace
     eventually {
@@ -254,13 +230,32 @@ run  {
     }
 } for exactly 2 Habitat
 
-//more runs coming soon...
+//all overpopulated - unsats, showing that they all feed on each other and can't grow without the other
+run  {
+    validTrace
+    eventually {
+        all h: Habitat | h.wolfPop = Overpopulated
+        all h: Habitat  | h.elkPop  = Overpopulated
+        all h: Habitat | h.vegLevel = Overpopulated
+    }
+} for exactly 2 Habitat
+
+//Everything extinct, should be UNSAT! - if we had lifespans it would be theoritcally possible
+run  {
+    validTrace
+    eventually {
+        all h: Habitat | h.wolfPop = Empty
+        all h: Habitat  | h.elkPop  = Empty
+        all h: Habitat | h.vegLevel = Empty
+    }
+} for exactly 2 Habitat
+//more runs possible...
 
 
 
 
-//CHEAT SHEET:
-//CHEAT SHEET:
+
+//CHEAT SHEET (for use without custom visualizer):
 // elkGrow:              elkPop↑, vegLevel↓, wolfPop unchanged          (requires: wolfPop=Empty, vegLevel!=Empty, elkPop!=Overpopulated)
 // elkReproduce:         elkPop↑, vegLevel↓, wolfPop unchanged          (requires: vegLevel=High or Overpopulated, elkPop!=Overpopulated)
 // wolfPredation:        elkPop↓, wolfPop↑, vegLevel unchanged          (requires: wolfPop!=Empty, elkPop!=Empty)
