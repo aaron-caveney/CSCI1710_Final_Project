@@ -186,6 +186,8 @@ Testing explanations can be found above each test in test_working_version.frg. G
 
 - No other group/student collaboration
 
-- AI Use:  We used AI to help with the custom visualizer by having it give us a template that we could manipulate for our needs and also for help with brainstorming in pseudocode/verbally how to approach our reach goal modeling.
+- AI Use:  We used AI to help with the custom visualizer by having it help fill out the template with our specific needs. Specifically, it helped with the creation of buttons, coloring different events that occur, and the layout of the visualizer. Additionally, we used it for help with brainstorming in pseudocode/verbally, how to approach our reach goal modeling.
+
+- FINAL NOTE: Explainer video needs to be opened externally for the audio (at least on our end). "Archived Prototypes" shows our past versions for curiosity/reference.
 
 
