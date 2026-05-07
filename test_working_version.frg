@@ -371,7 +371,7 @@ test suite for wolfMigrate {
     test expect { migrateSat: {
         some h1, h2: Habitat | {
             h2 in h1.adjacent
-            h1.wolfPop = Mediums
+            h1.wolfPop = Medium
             h2.wolfPop = Empty
             wolfMigrate[h1, h2]
             h1.wolfPop' = Low
