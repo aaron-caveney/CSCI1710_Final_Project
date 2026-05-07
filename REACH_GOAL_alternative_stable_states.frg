@@ -16,7 +16,7 @@
     //   No beavers → no dams → water table stays deep
     //   Deep water table → willows can't establish
     //   Result: System stuck in degraded state even tho elk suppression works
-//
+
 
 // Sigs
 
@@ -400,8 +400,6 @@ pred hysteresisLocked {
 option max_tracelength 30
 
 // SCENARIO 1: Simple Trophic Cascade
-// What SHOULD happen: wolves suppress elk → vegetation recovers
-// Tests: Can the system reach this state?
 run {
     validTrace
     eventually {
@@ -414,9 +412,6 @@ run {
 } for 2 Habitat
 
 // SCENARIO 2: Hysteresis Trap - Restoration Fails
-// What ACTUALLY happens: wolves suppress elk BUT ecosystem stuck in degraded state
-// Key insight: Even with low elk, vegetation can't recover due to deep water table
-// and absence of beavers
 run {
     validTrace
     eventually {
@@ -434,49 +429,7 @@ run {
     }
 } for 2 Habitat
 
-// SCENARIO 3: Beaver-Mediated Recovery (Positive Path - Escape from Trap)
-// What CAN happen: If water table restores (naturally or via intervention),
-// beavers can colonize and initiate positive feedback → recovery
-run {
-    validTrace
-    eventually {
-        wolvesReintroduced
-        eventually {
-            // First: water table must restore (either slow or via dams)
-            some h: Habitat | h.waterTableDepth = 0
-            eventually {
-                // Then: beavers can colonize
-                beaversRestored
-                eventually {
-                    // Then: vegetation can grow
-                    some h: Habitat | h.vegLevel = High and h.beaverPresent = 1
-                }
-            }
-        }
-    }
-} for 2 Habitat
-
-// SCENARIO 4: Stuck in Alternative Stable State (Despite Wolves)
-// What persists: Wolves present, elk suppressed, BUT system locked by slowly-changing
-// variables. This IS an alternative stable state: multiple equilibria coexist.
-run {
-    validTrace
-    eventually {
-        wolvesReintroduced
-        eventually {
-            all h: Habitat | h.elkPop = Low or h.elkPop = Empty or h.elkPop = Medium
-            eventually {
-                always {
-                    hysteresisLocked
-                }
-            }
-        }
-    }
-} for 2 Habitat
-
-// SCENARIO 5: Spatial Heterogeneity - Different Fates
-// Key insight from Hobbs paper: Different habitats experience different outcomes
-// Some escape degradation (good hydrology), others remain trapped (incised streams)
+// SCENARIO 3: Different Fates
 run {
     validTrace
     eventually {

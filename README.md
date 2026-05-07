@@ -127,6 +127,9 @@ Initially, our goal was to model a habitat with different animal counts and foll
 ## Example
 Starting with wolves absent and elk overpopulated, we ask: can a stable coexistence state ever be reached? Forge either returns a concrete trace showing exactly which transitions fired in order to get there, or proves no such trace exists. Forge additionally shows not one possibility, but many, theoretically helping researchers find the most efficient method. Our model is fundamentally far more qualitative than a python model. Wildlife and nature is unpredictable and our model gives it far more wiggle room than python. 
 
+
+
+
 # Project Extension
     - The extension builds on our existing base model. Inspired by a study driven from Colorado State University on hysteresis and reachable alternate stable states (cited in resource section below)
 
@@ -189,5 +192,7 @@ Testing explanations can be found above each test in test_working_version.frg. G
 - AI Use:  We used AI to help with the custom visualizer by having it help fill out the template with our specific needs. Specifically, it helped with the creation of buttons, coloring different events that occur, and the layout of the visualizer. Additionally, we used it for help with brainstorming in pseudocode/verbally, how to approach our reach goal modeling.
 
 - FINAL NOTE: Explainer video needs to be opened externally for the audio (at least on our end). "Archived Prototypes" shows our past versions for curiosity/reference.
+
+
 
 
