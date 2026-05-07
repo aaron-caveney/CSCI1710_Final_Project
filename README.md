@@ -65,3 +65,16 @@ The model begins with:
 
 The model is used to explore whether certain ecological outcomes are possible over time.
 
+# Project Extension
+    - The extension builds on our existing base model. Inspired by a study driven from Colorado State University on hysterisis and reachable alternate stable states (cited in resource section below)
+
+    # Key Idea:
+        - Wolf reintroduction successfully limits elk population, but environment degradation
+
+
+# Collaboration
+
+- No other group/student collaboration
+
+- AI Use:  
+
