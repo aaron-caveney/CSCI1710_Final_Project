@@ -33,7 +33,7 @@ sig Habitat {
     
     // Changing environmental state (the hystersis)
     var degraded: one Int,           // 0 = restored, 1 = stream-incised
-    var waterTableDepth: one Int,    // 0 = shallow, 1 = deep (bad)
+    var waterTableDepth: one Int,    // 0 = shallow, 1 = deep 
     
     // Ecosystem engineering (beaver-willow relationship)
     var beaverPresent: one Int,      // 0 = no beavers, 1 = beavers active
@@ -113,7 +113,7 @@ pred beaverAbandon[h: Habitat] {
     h.vegLevel' = h.vegLevel
     h.wolfPop' = h.wolfPop
     h.elkPop' = h.elkPop
-    h.degraded' = 1                        // stream incision = physical degradation
+    h.degraded' = 1                       
     frameOthersExcept[h]
 }
 
@@ -122,9 +122,9 @@ pred beaverAbandon[h: Habitat] {
 // Stream incision occurs when beavers absent and elk are destroying everything
 pred streamIncision[h: Habitat] {
     h.beaverPresent = 0                    // no beaver dams to keep water
-    h.elkPop = Overpopulated               // extreme browsing = damage
-    h.degraded = 0                         // not yet incised
-    h.waterTableDepth = 0                  // water table not yet deep
+    h.elkPop = Overpopulated               // extreme grazing = damage
+    h.degraded = 0                         
+    h.waterTableDepth = 0                  // water table not deep
     h.waterTableDepth' = 1                 // streams begin to incise
     h.degraded' = 1                        // physical degradation starts
     h.wolfPop' = h.wolfPop
@@ -135,10 +135,10 @@ pred streamIncision[h: Habitat] {
     frameOthersExcept[h]
 }
 
-// Water table recovers naturally over time (slowly) or with beaver dams (quickly)
+// Water table recovers naturally over time or with beaver dams 
 pred waterTableRestore[h: Habitat] {
-    h.waterTableDepth = 1                  // water table currently deep (incised)
-    h.beaverPresent = 1                    // beavers present with functioning dam
+    h.waterTableDepth = 1                  // water table currently deep
+    h.beaverPresent = 1                    // beavers with functioning dam
     h.damPresent = 1
     h.waterTableDepth' = 0                 // dam raises water table rapidly
     h.wolfPop' = h.wolfPop
@@ -150,13 +150,12 @@ pred waterTableRestore[h: Habitat] {
     frameOthersExcept[h]
 }
 
-// Very slow natural water table recovery (without beavers/dams)
-// This requires no beavers and represents natural groundwater processes
+// slow natural water table recovery (without beavers/dams)
+// requires no beavers and represents natural groundwater processes
 pred waterTableRestoreSlow[h: Habitat] {
     h.waterTableDepth = 1                  // water table currently deep
-    h.beaverPresent = 0                    // no beavers (very slow recovery)
-    // Allow recovery even in degraded habitats via natural processes
-    h.waterTableDepth' = 0                 // slowly recovers (rare transition)
+    h.beaverPresent = 0                    // no beavers 
+    h.waterTableDepth' = 0                 // slowly recovers (makes this a rare, slow transition)
     h.wolfPop' = h.wolfPop
     h.elkPop' = h.elkPop
     h.vegLevel' = h.vegLevel
@@ -166,7 +165,7 @@ pred waterTableRestoreSlow[h: Habitat] {
     frameOthersExcept[h]
 }
 
-// Vegetation Dyanmics (from existing model and adding extension))
+// Vegetation Dyanmics (from existing model and adding extension)
 
 // Elk growth when wolves absent
 pred elkGrow[h: Habitat] {
@@ -174,7 +173,7 @@ pred elkGrow[h: Habitat] {
     h.elkPop != Overpopulated              // not already at max
     h.vegLevel != Empty                    // food available
     nextLevel[h.elkPop, h.elkPop']         // elk increase
-    h.vegLevel' = h.vegLevel               // vegetation unchanged by this transition
+    h.vegLevel' = h.vegLevel               // vegetation not changed
     h.wolfPop' = h.wolfPop
     h.degraded' = h.degraded
     h.waterTableDepth' = h.waterTableDepth
@@ -185,7 +184,7 @@ pred elkGrow[h: Habitat] {
 
 // Vegetation degradation from overpopulated elk
 pred vegDegradation[h: Habitat] {
-    h.elkPop = Overpopulated               // massive browsing pressure
+    h.elkPop = Overpopulated               // elk graze at high levels
     h.vegLevel != Empty                    // vegetation still present
     prevLevel[h.vegLevel, h.vegLevel']     // vegetation decreases
     h.wolfPop' = h.wolfPop
@@ -197,10 +196,10 @@ pred vegDegradation[h: Habitat] {
     frameOthersExcept[h]
 }
 
-// Vegetation recovery when water table shallow and browsing low
+// Vegetation recovery when water table shallow and grazing is low
 pred vegRecoveryShallow[h: Habitat] {
     h.waterTableDepth = 0                  // water table shallow (good for willows)
-    h.elkPop != Overpopulated              // not being heavily browsed
+    h.elkPop != Overpopulated              // not being heavily grazed
     h.vegLevel != Overpopulated
     nextLevel[h.vegLevel, h.vegLevel']     // vegetation increases
     h.wolfPop' = h.wolfPop
@@ -212,13 +211,13 @@ pred vegRecoveryShallow[h: Habitat] {
     frameOthersExcept[h]
 }
 
-// Vegetation recovery when water table deep (very difficult, requires low elk)
-// This models the alternative pathway where recovery is extremely slow
+// Vegetation recovery when water table deep (difficult, requires low elk)
+// models the alternative pathway where recovery is extremely slow
 pred vegRecoveryDeep[h: Habitat] {
-    h.waterTableDepth = 1                  // water table deep (hard for willows)
-    h.elkPop = Empty                       // must have absolutely zero elk pressure
+    h.waterTableDepth = 1                  // water table deep, willows can't grow
+    h.elkPop = Empty                       // must have zero elk 
     h.vegLevel != Overpopulated
-    nextLevel[h.vegLevel, h.vegLevel']     // recovery, but only at Empty elk
+    nextLevel[h.vegLevel, h.vegLevel']     // recovery
     h.wolfPop' = h.wolfPop
     h.elkPop' = h.elkPop
     h.degraded' = h.degraded
@@ -236,8 +235,8 @@ pred vegRecoveryDeep[h: Habitat] {
 pred wolfPredation[h: Habitat] {
     h.wolfPop != Empty                     // wolves present
     h.elkPop != Empty                      // elk present
-    prevLevel[h.elkPop, h.elkPop']         // elk suppressed
-    nextLevel[h.wolfPop, h.wolfPop']       // wolves thrive
+    prevLevel[h.elkPop, h.elkPop']         // elk lowered
+    nextLevel[h.wolfPop, h.wolfPop']       // wolves increase
     h.vegLevel' = h.vegLevel
     h.degraded' = h.degraded
     h.waterTableDepth' = h.waterTableDepth
@@ -260,7 +259,7 @@ pred wolfStarve[h: Habitat] {
     frameOthersExcept[h]
 }
 
-// Wolf migration to adjacent habitat
+// Wolf migration
 pred wolfMigrate[h1: Habitat, h2: Habitat] {
     h2 in h1.adjacent
     h1.wolfPop != Empty
@@ -282,7 +281,7 @@ pred wolfMigrate[h1: Habitat, h2: Habitat] {
     frameOthersExcept2[h1, h2]
 }
 
-// Wolf reintroduction (external intervention)
+// Wolf reintroduction 
 pred reintroduceWolves[h: Habitat] {
     h.wolfPop = Empty
     h.wolfPop' = Low
@@ -298,13 +297,13 @@ pred reintroduceWolves[h: Habitat] {
 
 pred doNothing {
     all h: Habitat | {
-        h.wolfPop'      = h.wolfPop
-        h.elkPop'       = h.elkPop
-        h.vegLevel'     = h.vegLevel
-        h.degraded'     = h.degraded
+        h.wolfPop' = h.wolfPop
+        h.elkPop' = h.elkPop
+        h.vegLevel' = h.vegLevel
+        h.degraded' = h.degraded
         h.waterTableDepth' = h.waterTableDepth
         h.beaverPresent' = h.beaverPresent
-        h.damPresent'   = h.damPresent
+        h.damPresent' = h.damPresent
     }
 }
 
@@ -312,10 +311,10 @@ pred doNothing {
 
 pred step {
     some h: Habitat, h2: Habitat | {
-        // Beaver-willow feedback
+        // Beaver-willow loop
         beaverColonization[h]         or
         beaverAbandon[h]              or
-        // Hydrologic dynamics (slowly-changing)
+        // Hydrologic dynamics
         streamIncision[h]             or
         waterTableRestore[h]          or
         waterTableRestoreSlow[h]      or
@@ -334,12 +333,12 @@ pred step {
 
 pred init {
     all h: Habitat | {
-        h.wolfPop = Empty              // no wolves (pre-reintroduction)
+        h.wolfPop = Empty              // no wolves
         h.elkPop = Overpopulated       // elk at high levels
-        h.vegLevel = Low               // vegetation suppressed by overbrowsing
-        h.beaverPresent = 0            // no beavers (they already left)
+        h.vegLevel = Low               // vegetation low from overgrazing
+        h.beaverPresent = 0            // no beavers 
         h.damPresent = 0               // no functioning dams
-        h.waterTableDepth = 1          // water table deep (streams incised)
+        h.waterTableDepth = 1          // water table deep
         h.degraded = 1                 // habitat physically degraded
     }
 }
@@ -429,20 +428,20 @@ run {
     }
 } for 2 Habitat
 
-// SCENARIO 3: Different Fates
+// SCENARIO 3: Different Habitat Endings
 run {
     validTrace
     eventually {
         wolvesReintroduced
         eventually {
-            // At least one habitat escapes: water restores, beavers colonize, veg recovers (with wolves)
+            // At least one habitat escapes
             (some h1: Habitat | 
                 h1.wolfPop != Empty and
                 h1.waterTableDepth = 0 and 
                 h1.beaverPresent = 1 and 
                 h1.vegLevel = High) 
             and
-            // At least one habitat stays trapped: incised, no beavers, veg suppressed (also has wolves)
+            // At least one habitat stays trapped
             (some h2: Habitat | 
                 h2.wolfPop != Empty and
                 h2.degraded = 1 and 

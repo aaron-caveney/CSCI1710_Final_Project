@@ -139,7 +139,7 @@ Beaver-willow relationship breaks with deep water table (caused by overgrazing e
 
 ## Extension Implementation
 Added degradation (in the form of stream incision) and waterTableDepth
-Modeled loop between willows and beavers (beavers build dams to maintain water table level, allows willows to grow, willows are beavers’ source of food
+Modeled loop between willows and beavers (beavers build dams to maintain water table level, allows willows to grow, willows are beavers’ source of food)
 Recovery occurs w/ medium elk population and shallow water, but needs zero elk if water is deep
 
 # Scenarios (run model through normal visualizer)
@@ -185,11 +185,18 @@ kind of answer.
 ## TESTING
 Testing explanations can be found above each test in test_working_version.frg. Generally used positive and negative examples to test each part of our code.
 
+# Cited Sources
+“Wolf Reintroduction.” Greater Yellowstone Coalition, Greater Yellowstone Coalition, https://greateryellowstone.org/yellowstone-wolf-reintroduction
+. Accessed 7 May 2026.
+
+Dimas, Jennifer. “Apex Predators Not a Quick Fix for Restoring Ecosystems, 20-Year CSU Study Finds.” Colorado State University News, Colorado State University, 7 Feb. 2024, https://newsmediarelations.colostate.edu/2024/02/07/apex-predators-not-a-quick-fix-for-restoring-ecosystems-20-year-csu-study-finds/
+. Accessed 7 May 2026.
+
 # Collaboration
 
 - No other group/student collaboration
 
-- AI Use:  We used AI to help with the custom visualizer by having it help fill out the template with our specific needs. Specifically, it helped with the creation of buttons, coloring different events that occur, and the layout of the visualizer. Additionally, we used it for help with brainstorming in pseudocode/verbally, how to approach our reach goal modeling.
+- AI Use:  We used AI to help with the custom visualizer by having it help fill out the template with our specific needs. Specifically, it helped with the creation of buttons, coloring different events that occur, and the layout of the visualizer. Additionally, we used it for help with brainstorming in pseudocode/verbally, how to approach our reach goal modeling. For the extension, AI helped brainstorm how to model then alternative state using restrictive, slow changing variables. It was helpful to hash out complex transition predicates by rigorously prompting the LLM with questions and clarifications to fit the goal and scope of our model.
 
 - FINAL NOTE: Explainer video needs to be opened externally for the audio (at least on our end). "Archived Prototypes" shows our past versions for curiosity/reference.
 
